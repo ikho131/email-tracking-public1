@@ -1,11 +1,11 @@
 export default async function handler(req, res) {
   const { email, university, company, type, sentAt } = req.query;
   const linkRaw = req.query.link || "";
-  const link = decodeURIComponent(decodeURIComponent(linkRaw));
+  const link = decodeURIComponent(decodeURIComponent(linkRaw)); // ✅ 이중 디코딩
 
   const scriptUrl = "https://script.google.com/macros/s/AKfycbyTh3IvVqL1fCUiv82wd--gAkV2omr1P-hMAw23ieKJcF5nc3uYptBr31YUDF86t2_n/exec";
 
-  console.log("🔗 [REDIRECT] 요청 수신됨");
+  console.log("🔀 [REDIRECT] 요청 수신됨");
   console.log("받은 쿼리값:", { email, university, company, type, link, sentAt });
 
   if (!scriptUrl || !link) {
@@ -20,11 +20,11 @@ export default async function handler(req, res) {
       university,
       company,
       link,
-      time: new Date().toISOString(),
-      sentAt,
+      sentAt,                           // 발송 시각
+      time: new Date().toISOString(),  // ✅ 클릭 시각: 현재 시각
     };
 
-    console.log("📤 Google Apps Script로 POST 요청 전송 ➡️", payload);
+    console.log("📡 Google Apps Script로 POST 요청 전송 ▶️", payload);
 
     await fetch(scriptUrl, {
       method: "POST",
