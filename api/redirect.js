@@ -1,27 +1,38 @@
 export default async function handler(req, res) {
-  const { email, university, company, type } = req.query;
+  const { email, university, company, type, sentAt } = req.query;
   const linkRaw = req.query.link || "";
-  const link = decodeURIComponent(decodeURIComponent(linkRaw)); // ✅ 이중 디코딩
+  const link = decodeURIComponent(decodeURIComponent(linkRaw));
 
-  const scriptUrl = "https://script.google.com/macros/s/AKfycbwLp8Q6q_o0VncsSQW4jFRFthXcfNpX2OpL4zRd2t0nizV9QoohOq8WRKXfuf38j_G9/exec";
+  const scriptUrl = "https://script.google.com/macros/s/AKfycbyTh3IvVqL1fCUiv82wd--gAkV2omr1P-hMAw23ieKJcF5nc3uYptBr31YUDF86t2_n/exec";
+
+  console.log("🔗 [REDIRECT] 요청 수신됨");
+  console.log("받은 쿼리값:", { email, university, company, type, link, sentAt });
 
   if (!scriptUrl || !link) {
+    console.warn("⚠️ 잘못된 요청: scriptUrl 또는 link 누락");
     return res.status(400).json({ error: "Invalid request. Missing scriptUrl or link." });
   }
 
   try {
+    const payload = {
+      type: type || "click",
+      email,
+      university,
+      company,
+      link,
+      time: new Date().toISOString(),
+      sentAt,
+    };
+
+    console.log("📤 Google Apps Script로 POST 요청 전송 ➡️", payload);
+
     await fetch(scriptUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        type: type || "click",
-        email,
-        university,
-        company,
-        link,
-        time: new Date().toISOString(),
-      }),
+      body: JSON.stringify(payload),
     });
+
+    console.log("✅ Google Apps Script POST 완료");
 
     res.writeHead(302, { Location: link });
     res.end();
