@@ -1,20 +1,30 @@
 export default async function handler(req, res) {
-  const { email, university, company, type, t } = req.query;
+  const { email, university, company, type, t, sentAt } = req.query;
 
-  const scriptUrl = "https://script.google.com/macros/s/AKfycbwLp8Q6q_o0VncsSQW4jFRFthXcfNpX2OpL4zRd2t0nizV9QoohOq8WRKXfuf38j_G9/exec";
+  const scriptUrl = "https://script.google.com/macros/s/AKfycbyTh3IvVqL1fCUiv82wd--gAkV2omr1P-hMAw23ieKJcF5nc3uYptBr31YUDF86t2_n/exec";
+
+  console.log("📩 [PIXEL] 요청 수신됨");
+  console.log("받은 쿼리값:", { email, university, company, type, t, sentAt });
 
   try {
+    const payload = {
+      type: type || "open",
+      email,
+      university,
+      company,
+      time: t,
+      sentAt,
+    };
+
+    console.log("📤 Google Apps Script로 POST 요청 전송 ➡️", payload);
+
     await fetch(scriptUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        type: type || "open",
-        email,
-        university,
-        company,
-        time: t,
-      }),
+      body: JSON.stringify(payload),
     });
+
+    console.log("✅ Google Apps Script POST 완료");
 
     const pixel = Buffer.from("R0lGODlhAQABAIABAP///wAAACwAAAAAAQABAAACAkQBADs=", "base64");
     res.setHeader("Content-Type", "image/gif");
